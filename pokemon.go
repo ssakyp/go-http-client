@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -20,7 +19,10 @@ func (c *Client) GetPokemonByName(
 	)
 
 	if err != nil {
-		return Pokemon{}, err
+		return Pokemon{}, PokemonFetchErr{
+			Message:    err.Error(),
+			StatusCode: -1,
+		}
 	}
 
 	req.Header.Add("Accept", "application/json")
@@ -28,13 +30,19 @@ func (c *Client) GetPokemonByName(
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return Pokemon{}, err
+		return Pokemon{}, PokemonFetchErr{
+			Message:    err.Error(),
+			StatusCode: -1,
+		}
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return Pokemon{}, fmt.Errorf("unexpected status code returned from the pokeapi")
+		return Pokemon{}, PokemonFetchErr{
+			Message:    "non-200 status code from the API",
+			StatusCode: resp.StatusCode,
+		}
 	}
 
 	var pokemon Pokemon
@@ -42,7 +50,10 @@ func (c *Client) GetPokemonByName(
 	err = json.NewDecoder(resp.Body).Decode(&pokemon)
 
 	if err != nil {
-		return Pokemon{}, err
+		return Pokemon{}, PokemonFetchErr{
+			Message:    err.Error(),
+			StatusCode: resp.StatusCode,
+		}
 	}
 
 	return pokemon, nil
