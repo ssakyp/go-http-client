@@ -15,7 +15,7 @@ func (c *Client) GetPokemonByName(
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		"https://pokeapi.co/api/v2/pokemon/"+pokemonName,
+		c.apiURL+"/api/v2/pokemon/"+pokemonName,
 		nil,
 	)
 
